@@ -3,23 +3,31 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Actions\Task\IndexAction;
 use App\Enums\TaskStatusEnum;
+use App\Http\Requests\task\IndexTaskRequest;
 use App\Http\Requests\task\StoreTaskRequest;
 use App\Models\Task;
 use App\Models\User;
-use Illuminate\Http\Request;
+use App\services\custom\CustomInterface;
+use Auth;
 
 class TaskController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(IndexTaskRequest $request, CustomInterface $customInjection)
     {
-        $tasks = Task::orderBy('deadline_at', 'desc')->get();
+        $validated = $request->validated();
+        $customInjection->someFunction();
+        $tasks = app()->call(IndexAction::class, [
+            'validated' => $validated,
+        ]);
 
         return view('task.index', [
-            'tasks' => $tasks
+            'tasks' => $tasks,
+            'filterValue' => $validated['filter'] ?? null,
         ]);
     }
 
@@ -74,6 +82,9 @@ class TaskController extends Controller
      */
     public function update(StoreTaskRequest $request, Task $task)
     {
+        if ($request->user()->cannot('update', $task)) {
+            abort(403);
+        }
         $task->update($request->validated());
 
         return redirect('/tasks')->with('success', 'Task updated');
@@ -84,6 +95,10 @@ class TaskController extends Controller
      */
     public function destroy(Task $task)
     {
+        $user = Auth::user();
+        if ($user->cannot('update', $task)) {
+            abort(403);
+        }
         $task->delete();
 
         return redirect('/tasks')->with('success', 'Task deleted successfully');

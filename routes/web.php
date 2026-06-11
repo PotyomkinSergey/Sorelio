@@ -23,3 +23,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/task/{task}/edit', [TaskController::class, 'edit']);
     Route::post('/task/{task}/update', [TaskController::class, 'update']);
 });
+
+
+//Route::middleware(['auth'])->group(function () {
+//    Route::resource('tasks', TaskController::class);
+//});

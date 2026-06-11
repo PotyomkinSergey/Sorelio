@@ -1,8 +1,27 @@
+@php use App\Enums\TaskStatusEnum; @endphp
 @extends('layout.main')
 @section('content')
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h2>Tasks</h2>
-        <a href="/task/create" class="btn btn-primary">Create task</a>
+    </div>
+    <div class="row mb-2">
+        <div class="col-md-10">
+            <form method="GET" action="/tasks">
+                <div class="input-group">
+                    <input
+                        type="text"
+                        name="filter"
+                        class="form-control"
+                        placeholder="Search in tasks ..."
+                        value="{{ request('filter') }}"
+                    >
+                    <button class="btn btn-primary" type="submit">Search</button>
+                </div>
+            </form>
+        </div>
+        <div class="col-md-2">
+            <a href="/task/create" class="btn btn-primary">Create task</a>
+        </div>
     </div>
 
     @if(session('success'))
@@ -11,17 +30,19 @@
         </div>
     @endif
 
+    {{ $tasks->links() }}
+
     <table class="table table-striped table-bordered align-middle">
         <thead class="table-dark">
-            <tr>
-                <th>#</th>
-                <th>Title</th>
-                <th>Status</th>
-                <th>Description</th>
-                <th>User</th>
-                <th>Deadline</th>
-                <th class="text-end">Actions</th>
-            </tr>
+        <tr>
+            <th>#</th>
+            <th>Title</th>
+            <th>Status</th>
+            <th>Description</th>
+            <th>User</th>
+            <th>Deadline</th>
+            <th class="text-end">Actions</th>
+        </tr>
         </thead>
         <tbody>
         @forelse($tasks as $task)
@@ -30,9 +51,10 @@
                 <td>{{ $task->title }}</td>
                 <td>
                     @if($task->isDone())
-                        <span class="badge bg-success">{{\App\Enums\TaskStatusEnum::DONE->name}}</span>
+                        <span class="badge bg-success">{{TaskStatusEnum::DONE->name}}</span>
                     @else
-                        <span class="badge bg-warning text-dark">{{$task->status == \App\Enums\TaskStatusEnum::DOING->value ? 'Doing' : 'Todo'}}</span>
+                        <span
+                            class="badge bg-warning text-dark">{{$task->status == TaskStatusEnum::DOING->value ? 'Doing' : 'Todo'}}</span>
                     @endif
                 </td>
                 <td>{{ $task->description }}</td>
